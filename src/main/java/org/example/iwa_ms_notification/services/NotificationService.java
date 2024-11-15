@@ -54,4 +54,33 @@ public class NotificationService {
     public Iterable<Notification> getAllNotifications() {
         return notificationRepository.findAll();
     }
+    public Notification createSupportResponseNotification(Long userId, Long questionId) {
+        // Vérifier l'existence de l'utilisateur dans ms_user
+        String userServiceUrl = "http://host.docker.internal:8080/users/" + userId;
+        ResponseEntity<Object> userResponse = restTemplate.getForEntity(userServiceUrl, Object.class);
+
+        if (!userResponse.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Utilisateur non trouvé pour l'ID : " + userId);
+        }
+
+        // Vérifier l'existence de la question de support dans ms_support
+        String supportServiceUrl = "http://host.docker.internal:8087/support/questions/" + questionId;
+        ResponseEntity<Object> questionResponse = restTemplate.getForEntity(supportServiceUrl, Object.class);
+
+        if (!questionResponse.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Question de support non trouvée pour l'ID : " + questionId);
+        }
+
+        // Créer et enregistrer la notification
+        Notification notification = new Notification();
+        notification.setUserId(userId);
+        notification.setType("question répondue");
+        notification.setMessage("Une réponse a été donnée à votre question dans le support");
+        notification.setIsRead(false);
+        notification.setRelatedEntityId(questionId);
+        notification.setEntityType("support");
+
+        return notificationRepository.save(notification);
+    }
+
 }

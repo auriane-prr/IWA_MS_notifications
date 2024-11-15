@@ -35,4 +35,16 @@ public class NotificationController {
         Notification notification = notificationService.createFavoriteNotification(userId, lieuId);
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
     }
+
+    @PostMapping("/create/support-response")
+    public ResponseEntity<Notification> createSupportResponseNotification(
+            @RequestBody Map<String, Long> requestBody) {
+
+        Long userId = requestBody.get("userId");
+        Long questionId = requestBody.get("questionId");
+
+        Notification notification = notificationService.createSupportResponseNotification(userId, questionId);
+        return new ResponseEntity<>(notification, HttpStatus.CREATED);
+    }
+
 }
