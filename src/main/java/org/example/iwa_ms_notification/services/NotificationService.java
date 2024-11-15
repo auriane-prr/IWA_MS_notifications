@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import java.util.Map;
 
 @Service
 public class NotificationService {
@@ -16,23 +17,24 @@ public class NotificationService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public Notification createFavoriteNotification(Long userId, Long lieuId) {
+
+    public Notification createFavoriteNotification(Long lieuId) {
+        if (lieuId == null) {
+            throw new IllegalArgumentException("Lieu ID ne peut pas être nul");
+        }
+
         try {
-            // Vérifier l'existence de l'utilisateur dans ms_user
-            String userServiceUrl = "http://host.docker.internal:8080/users/" + userId;
-            ResponseEntity<Object> userResponse = restTemplate.getForEntity(userServiceUrl, Object.class);
-
-            if (!userResponse.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("Utilisateur non trouvé pour l'ID : " + userId);
-            }
-
-            // Vérifier l'existence du lieu dans ms_lieu
             String lieuServiceUrl = "http://host.docker.internal:8083/locations/" + lieuId;
-            ResponseEntity<Object> lieuResponse = restTemplate.getForEntity(lieuServiceUrl, Object.class);
+            ResponseEntity<Map> lieuResponse = restTemplate.getForEntity(lieuServiceUrl, Map.class);
 
             if (!lieuResponse.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("Lieu non trouvé pour l'ID : " + lieuId);
             }
+
+            // Récupérer userId depuis la réponse en utilisant Map
+            Map<String, Object> responseBody = lieuResponse.getBody();
+            System.out.println(responseBody);
+            Long userId = ((Number) responseBody.get("userId")).longValue();
 
             // Créer et enregistrer la notification
             Notification notification = new Notification();
@@ -45,12 +47,9 @@ public class NotificationService {
 
             return notificationRepository.save(notification);
         } catch (Exception e) {
-            // Log l'exception et retournez une réponse appropriée ou relancez l'exception
-            System.err.println("Erreur lors de la création de la notification : " + e.getMessage());
             throw new RuntimeException("Erreur lors de la création de la notification", e);
         }
     }
-
     public Iterable<Notification> getAllNotifications() {
         return notificationRepository.findAll();
     }
