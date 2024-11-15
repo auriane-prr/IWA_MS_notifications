@@ -46,4 +46,12 @@ public class NotificationController {
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
     }
 
+    @PostMapping("/create/comment")
+    public ResponseEntity<Notification> createCommentNotification(@RequestBody Map<String, Long> requestBody) {
+        Long locationId = requestBody.get("locationId");
+
+        Notification notification = notificationService.createCommentNotification(locationId);
+        return new ResponseEntity<>(notification, HttpStatus.CREATED);
+    }
+
 }

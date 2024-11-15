@@ -53,6 +53,7 @@ public class NotificationService {
     public Iterable<Notification> getAllNotifications() {
         return notificationRepository.findAll();
     }
+
     public Notification createSupportResponseNotification(Long userId, Long questionId) {
         // Vérifier l'existence de l'utilisateur dans ms_user
         String userServiceUrl = "http://host.docker.internal:8080/users/" + userId;
@@ -81,5 +82,40 @@ public class NotificationService {
 
         return notificationRepository.save(notification);
     }
+
+    public Notification createCommentNotification(Long locationId) {
+        if (locationId == null) {
+            throw new IllegalArgumentException("Lieu ID ne peut pas être nul");
+        }
+
+        try {
+            String lieuServiceUrl = "http://host.docker.internal:8083/locations/" + locationId;
+            ResponseEntity<Map> lieuResponse = restTemplate.getForEntity(lieuServiceUrl, Map.class);
+
+            if (!lieuResponse.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Lieu non trouvé pour l'ID : " + locationId);
+            }
+
+            // Récupérer userId depuis la réponse en utilisant Map
+            Map<String, Object> responseBody = lieuResponse.getBody();
+            System.out.println(responseBody);
+            Long userId = ((Number) responseBody.get("userId")).longValue();
+
+
+            // Créer et enregistrer la notification
+            Notification notification = new Notification();
+            notification.setUserId(userId);
+            notification.setType("Nouveau commentaire");
+            notification.setMessage("Un utilisateur a commenté votre lieu.");
+            notification.setIsRead(false);
+            notification.setRelatedEntityId(locationId);
+            notification.setEntityType("commentaire");
+
+            return notificationRepository.save(notification);
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la création de la notification pour un commentaire", e);
+        }
+    }
+
 
 }
