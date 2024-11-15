@@ -50,4 +50,8 @@ public class NotificationService {
             throw new RuntimeException("Erreur lors de la création de la notification", e);
         }
     }
+
+    public Iterable<Notification> getAllNotifications() {
+        return notificationRepository.findAll();
+    }
 }

@@ -20,10 +20,10 @@ public class NotificationController {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
 
-    @GetMapping("/")
-    public ResponseEntity<String> healthCheck() {
-        logger.info("Health check endpoint hit");
-        return ResponseEntity.ok("Notification service is up and running!");
+    @GetMapping()
+    public ResponseEntity<Iterable<Notification>> getAllNotifications() {
+        Iterable<Notification> notifications = notificationService.getAllNotifications();
+        return new ResponseEntity<>(notifications, HttpStatus.OK);
     }
 
     @PostMapping("/create/favorite")
