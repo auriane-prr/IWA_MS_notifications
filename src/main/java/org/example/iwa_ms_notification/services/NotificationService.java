@@ -16,26 +16,38 @@ public class NotificationService {
     @Autowired
     private RestTemplate restTemplate;
 
-    // Méthode pour créer une notification
-    public Notification createNotification(Notification notification) {
-        // Vérifier si l'utilisateur existe via ms_user
-        String userServiceUrl = "http://host.docker.internal:8080/users/" + notification.getUserId();
-        ResponseEntity<Object> response = restTemplate.getForEntity(userServiceUrl, Object.class);
+    public Notification createFavoriteNotification(Long userId, Long lieuId) {
+        try {
+            // Vérifier l'existence de l'utilisateur dans ms_user
+            String userServiceUrl = "http://host.docker.internal:8080/users/" + userId;
+            ResponseEntity<Object> userResponse = restTemplate.getForEntity(userServiceUrl, Object.class);
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            // L'utilisateur existe, on peut sauvegarder la notification
+            if (!userResponse.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Utilisateur non trouvé pour l'ID : " + userId);
+            }
+
+            // Vérifier l'existence du lieu dans ms_lieu
+            String lieuServiceUrl = "http://host.docker.internal:8083/locations/" + lieuId;
+            ResponseEntity<Object> lieuResponse = restTemplate.getForEntity(lieuServiceUrl, Object.class);
+
+            if (!lieuResponse.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Lieu non trouvé pour l'ID : " + lieuId);
+            }
+
+            // Créer et enregistrer la notification
+            Notification notification = new Notification();
+            notification.setUserId(userId);
+            notification.setType("ajout aux favoris");
+            notification.setMessage("Un utilisateur a ajouté votre lieu à ses favoris");
+            notification.setIsRead(false);
+            notification.setRelatedEntityId(lieuId);
+            notification.setEntityType("lieu");
+
             return notificationRepository.save(notification);
-        } else {
-            throw new RuntimeException("Utilisateur non trouvé pour l'ID : " + notification.getUserId());
+        } catch (Exception e) {
+            // Log l'exception et retournez une réponse appropriée ou relancez l'exception
+            System.err.println("Erreur lors de la création de la notification : " + e.getMessage());
+            throw new RuntimeException("Erreur lors de la création de la notification", e);
         }
-    }
-
-    // Autres méthodes du service (par exemple, pour marquer une notification comme lue)
-    public Notification markAsRead(Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification non trouvée pour l'ID : " + notificationId));
-
-        notification.setRead(true);
-        return notificationRepository.save(notification);
     }
 }

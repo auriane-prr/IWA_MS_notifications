@@ -57,11 +57,11 @@ public class Notification {
         this.message = message;
     }
 
-    public boolean isRead() {
+    public boolean getIsRead() {
         return isRead;
     }
 
-    public void setRead(boolean read) {
+    public void setIsRead(boolean read) {
         isRead = read;
     }
 
@@ -80,4 +80,5 @@ public class Notification {
     public void setEntityType(String entityType) {
         this.entityType = entityType;
     }
+
 }
