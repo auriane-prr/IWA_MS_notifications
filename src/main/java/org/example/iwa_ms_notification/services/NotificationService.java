@@ -18,17 +18,17 @@ public class NotificationService {
     private RestTemplate restTemplate;
 
 
-    public Notification createFavoriteNotification(Long lieuId) {
-        if (lieuId == null) {
+    public Notification createFavoriteNotification(Long locationId) {
+        if (locationId == null) {
             throw new IllegalArgumentException("Lieu ID ne peut pas être nul");
         }
 
         try {
-            String lieuServiceUrl = "http://host.docker.internal:8083/locations/" + lieuId;
+            String lieuServiceUrl = "http://host.docker.internal:8083/locations/" + locationId;
             ResponseEntity<Map> lieuResponse = restTemplate.getForEntity(lieuServiceUrl, Map.class);
 
             if (!lieuResponse.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("Lieu non trouvé pour l'ID : " + lieuId);
+                throw new RuntimeException("Lieu non trouvé pour l'ID : " + locationId);
             }
 
             // Récupérer userId depuis la réponse en utilisant Map
@@ -42,7 +42,7 @@ public class NotificationService {
             notification.setType("ajout aux favoris");
             notification.setMessage("Un utilisateur a ajouté votre lieu à ses favoris");
             notification.setIsRead(false);
-            notification.setRelatedEntityId(lieuId);
+            notification.setRelatedEntityId(locationId);
             notification.setEntityType("lieu");
 
             return notificationRepository.save(notification);

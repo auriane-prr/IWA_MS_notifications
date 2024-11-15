@@ -29,9 +29,9 @@ public class NotificationController {
     @PostMapping("/create/favorite")
     public ResponseEntity<Notification> createFavoriteNotification(@RequestBody Map<String, Long> requestBody) {
         logger.info("POST /notifications/create/favorite hit with data: {}", requestBody);
-        Long lieuId = requestBody.get("lieuId");
+        Long locationId = requestBody.get("locationId");
 
-        Notification notification = notificationService.createFavoriteNotification(lieuId);
+        Notification notification = notificationService.createFavoriteNotification(locationId);
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
     }
 
