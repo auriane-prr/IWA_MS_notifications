@@ -54,4 +54,24 @@ public class NotificationController {
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
     }
 
+    @PostMapping("/create/flag")
+    public ResponseEntity<Notification> createFlaggedNotification(@RequestBody Map<String, Object> requestBody) {
+        Long locationId = requestBody.containsKey("locationId") ? ((Number) requestBody.get("locationId")).longValue() : null;
+        Long commentId = requestBody.containsKey("commentId") ? ((Number) requestBody.get("commentId")).longValue() : null;
+        String reason = (String) requestBody.get("reason");
+
+        Notification notification = notificationService.createFlagNotification(locationId, commentId, reason);
+        return new ResponseEntity<>(notification, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/create/deleted")
+    public ResponseEntity<Notification> createDeletedNotification(@RequestBody Map<String, Object> requestBody) {
+        Long locationId = requestBody.containsKey("locationId") ? ((Number) requestBody.get("locationId")).longValue() : null;
+        Long commentId = requestBody.containsKey("commentId") ? ((Number) requestBody.get("commentId")).longValue() : null;
+
+        Notification notification = notificationService.createDeletedNotification(locationId, commentId);
+        return new ResponseEntity<>(notification, HttpStatus.CREATED);
+    }
+
+
 }

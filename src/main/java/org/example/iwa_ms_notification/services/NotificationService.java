@@ -50,6 +50,7 @@ public class NotificationService {
             throw new RuntimeException("Erreur lors de la création de la notification", e);
         }
     }
+
     public Iterable<Notification> getAllNotifications() {
         return notificationRepository.findAll();
     }
@@ -117,5 +118,96 @@ public class NotificationService {
         }
     }
 
+    public Notification createFlagNotification(Long locationId, Long commentId, String reason) {
+        if (locationId == null && commentId == null) {
+            throw new IllegalArgumentException("Location ID et Comment ID ne peuvent pas être tous les deux nuls");
+        }
+
+        try {
+            Long userId = null;
+
+            // Récupérer l'utilisateur propriétaire
+            if (locationId != null) {
+                String lieuServiceUrl = "http://host.docker.internal:8083/locations/" + locationId;
+                ResponseEntity<Map> lieuResponse = restTemplate.getForEntity(lieuServiceUrl, Map.class);
+                if (!lieuResponse.getStatusCode().is2xxSuccessful()) {
+                    throw new RuntimeException("Lieu non trouvé pour l'ID : " + locationId);
+                }
+                Map<String, Object> responseBody = lieuResponse.getBody();
+                userId = ((Number) responseBody.get("userId")).longValue();
+            } else if (commentId != null) {
+                String commentServiceUrl = "http://host.docker.internal:8081/comments/" + commentId;
+                ResponseEntity<Map> commentResponse = restTemplate.getForEntity(commentServiceUrl, Map.class);
+                if (!commentResponse.getStatusCode().is2xxSuccessful()) {
+                    throw new RuntimeException("Commentaire non trouvé pour l'ID : " + commentId);
+                }
+                Map<String, Object> responseBody = commentResponse.getBody();
+                userId = ((Number) responseBody.get("userId")).longValue();
+            }
+
+            if (userId == null) {
+                throw new RuntimeException("Impossible de déterminer l'utilisateur propriétaire");
+            }
+
+            // Créer et enregistrer la notification
+            Notification notification = new Notification();
+            notification.setUserId(userId);
+            notification.setType("Signalement");
+            notification.setMessage("Votre " + (locationId != null ? "lieu" : "commentaire") + " a été signalé : " + reason);
+            notification.setIsRead(false);
+            notification.setRelatedEntityId(locationId != null ? locationId : commentId);
+            notification.setEntityType(locationId != null ? "lieu" : "commentaire");
+
+            return notificationRepository.save(notification);
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la création de la notification pour un signalement", e);
+        }
+    }
+
+    public Notification createDeletedNotification(Long locationId, Long commentId) {
+        if (locationId == null && commentId == null) {
+            throw new IllegalArgumentException("Location ID et Comment ID ne peuvent pas être tous les deux nuls");
+        }
+
+        try {
+            Long userId = null;
+
+            // Récupérer l'utilisateur propriétaire
+            if (locationId != null) {
+                String lieuServiceUrl = "http://host.docker.internal:8083/locations/" + locationId;
+                ResponseEntity<Map> lieuResponse = restTemplate.getForEntity(lieuServiceUrl, Map.class);
+                if (!lieuResponse.getStatusCode().is2xxSuccessful()) {
+                    throw new RuntimeException("Lieu non trouvé pour l'ID : " + locationId);
+                }
+                Map<String, Object> responseBody = lieuResponse.getBody();
+                userId = ((Number) responseBody.get("userId")).longValue();
+            } else if (commentId != null) {
+                String commentServiceUrl = "http://host.docker.internal:8081/comments/" + commentId;
+                ResponseEntity<Map> commentResponse = restTemplate.getForEntity(commentServiceUrl, Map.class);
+                if (!commentResponse.getStatusCode().is2xxSuccessful()) {
+                    throw new RuntimeException("Commentaire non trouvé pour l'ID : " + commentId);
+                }
+                Map<String, Object> responseBody = commentResponse.getBody();
+                userId = ((Number) responseBody.get("userId")).longValue();
+            }
+
+            if (userId == null) {
+                throw new RuntimeException("Impossible de déterminer l'utilisateur propriétaire");
+            }
+
+            // Créer et enregistrer la notification
+            Notification notification = new Notification();
+            notification.setUserId(userId);
+            notification.setType("Suppression");
+            notification.setMessage("Votre " + (locationId != null ? "lieu" : "commentaire") + " a été supprimé par un administrateur.");
+            notification.setIsRead(false);
+            notification.setRelatedEntityId(locationId != null ? locationId : commentId);
+            notification.setEntityType(locationId != null ? "lieu" : "commentaire");
+
+            return notificationRepository.save(notification);
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la création de la notification pour une suppression", e);
+        }
+    }
 
 }
