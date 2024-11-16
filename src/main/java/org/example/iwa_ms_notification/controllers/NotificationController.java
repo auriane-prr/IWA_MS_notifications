@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,5 +74,17 @@ public class NotificationController {
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
     }
 
+    // Endpoint pour récupérer toutes les notifications non lues
+    @GetMapping("/unread")
+    public ResponseEntity<List<Notification>> getUnreadNotifications() {
+        List<Notification> unreadNotifications = notificationService.getUnreadNotifications();
+        return ResponseEntity.ok(unreadNotifications);
+    }
 
+    // Endpoint pour marquer une notification comme lue
+    @PutMapping("/{notificationId}/read")
+    public ResponseEntity<Notification> markNotificationAsRead(@PathVariable Long notificationId) {
+        Notification updatedNotification = notificationService.markNotificationAsRead(notificationId);
+        return ResponseEntity.ok(updatedNotification);
+    }
 }

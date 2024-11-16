@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -208,6 +210,18 @@ public class NotificationService {
         } catch (Exception e) {
             throw new RuntimeException("Erreur lors de la création de la notification pour une suppression", e);
         }
+    }
+
+    public List<Notification> getUnreadNotifications() {
+        return notificationRepository.findByIsReadFalse();
+    }
+
+    // Marquer une notification comme lue
+    public Notification markNotificationAsRead(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification introuvable pour l'ID : " + notificationId));
+        notification.setIsRead(true);
+        return notificationRepository.save(notification);
     }
 
 }
