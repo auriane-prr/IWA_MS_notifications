@@ -33,6 +33,10 @@ public class Notification {
         return notificationId;
     }
 
+    public void setNotificationId(Long notificationId) {
+        this.notificationId = notificationId;
+    }
+
     public Long getUserId() {
         return userId;
     }
