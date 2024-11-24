@@ -212,8 +212,8 @@ public class NotificationService {
         }
     }
 
-    public List<Notification> getUnreadNotifications() {
-        return notificationRepository.findByIsReadFalse();
+    public List<Notification> getUnreadNotificationsByUserId(Long userId) {
+        return notificationRepository.findByUserIdAndIsReadFalse(userId);
     }
 
     // Marquer une notification comme lue

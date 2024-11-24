@@ -76,8 +76,8 @@ public class NotificationController {
 
     // Endpoint pour récupérer toutes les notifications non lues
     @GetMapping("/unread")
-    public ResponseEntity<List<Notification>> getUnreadNotifications() {
-        List<Notification> unreadNotifications = notificationService.getUnreadNotifications();
+    public ResponseEntity<List<Notification>> getUnreadNotifications(@RequestParam Long userId) {
+        List<Notification> unreadNotifications = notificationService.getUnreadNotificationsByUserId(userId);
         return ResponseEntity.ok(unreadNotifications);
     }
 
