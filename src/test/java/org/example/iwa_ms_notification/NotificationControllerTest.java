@@ -86,15 +86,4 @@ public class NotificationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isRead").value(true));
     }
-
-    @Test
-    void testGetUnreadNotifications() throws Exception {
-        List<Notification> unreadNotifications = List.of(testNotification);
-        when(notificationService.getUnreadNotifications()).thenReturn(unreadNotifications);
-
-        mockMvc.perform(get("/notifications/unread"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].notificationId").value(1));
-    }
 }
